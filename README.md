@@ -1,5 +1,5 @@
 # Battleship State Tracker
-.NetCore console application for tracking state of battleShips in Game of Battleship
+.NetCore console application for tracking state of battleships in Game of Battleship
 
 
 ## Building
