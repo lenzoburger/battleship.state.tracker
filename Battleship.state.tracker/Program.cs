@@ -27,7 +27,7 @@ namespace Battleship.state.tracker
             Console.ReadKey();
 
             var board = new Board();
-            bool lost = false;
+            bool lost;
 
             do
             {
@@ -71,7 +71,7 @@ namespace Battleship.state.tracker
                         break;
                     case "--takeattack":
                         Console.ForegroundColor = ConsoleColor.White;
-                        var attackResult = board.TakeAttack(Mapper.MapCoordinates(input.Replace("--takeAttack", "").Trim()));
+                        var attackResult = board.TakeAttack(Mapper.MapCoordinates(input.ToLower().Replace("--takeattack", "").Trim()));
                         Console.WriteLine($"{attackResult}\n");
 
                         if (attackResult == AttackResult.GameOver)
@@ -113,8 +113,9 @@ namespace Battleship.state.tracker
             Coordinate coordinates = null;
             int? length = null;
             ShipDirection? direction = null;
+            args = args.ToLower();
 
-            args = args.Replace("--addShip", "").Trim();
+            args = args.Replace("--addship", "").Trim();
 
             var options = args.Split(',');
 
@@ -142,19 +143,6 @@ namespace Battleship.state.tracker
             }
 
             return new Ship(coordinates, direction.Value, length.Value);
-        }
-
-        public static Coordinate TakeAttack(string args)
-        {
-            args = args.Replace("--takeAttack", "").Trim();
-
-            Coordinate coordinates = Mapper.MapCoordinates(args);
-            if (coordinates == null)
-            {
-                throw new ArgumentException("Invalid coordinates specified");
-            }
-
-            return coordinates;
         }
     }
 }
