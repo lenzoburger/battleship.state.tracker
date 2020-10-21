@@ -7,6 +7,7 @@ namespace Battleship.state.tracker.Models
         public int X { get; }
 
         public int Y { get; }
+        public bool Hit { get; set; } = false;
         public Coordinate(int x, int y)
         {
             this.X = x;

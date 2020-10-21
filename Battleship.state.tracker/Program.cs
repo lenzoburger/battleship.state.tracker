@@ -1,6 +1,6 @@
 ﻿using System;
 using Battleship.state.tracker.Components.Board;
-using Battleship.state.tracker.Components.Ship;
+using Battleship.state.tracker.Components.Vessel;
 using Battleship.state.tracker.Models;
 using Battleship.state.tracker.Utilities;
 
@@ -10,6 +10,7 @@ namespace Battleship.state.tracker
     {
         static void Main(string[] args)
         {
+            Console.Clear();
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.Title = "Battleship - State Tracker.";
             Console.WriteLine("Welcome to Battleship State Tracker!");
@@ -18,24 +19,29 @@ namespace Battleship.state.tracker
             Console.WriteLine("\nCommands:\n");
             Console.Write("--addShip c=coordinates,l=length,d=direction(H,V)\n");
             Console.Write("\texample: --addShip c=B5,l=4,d=V\n");
-            Console.Write("--takeAttack\n");
+            Console.Write("--takeAttack coordinates\n");
+            Console.Write("\texample: --takeAttack B6\n");
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\nPress enter to begin setup...");
             Console.ReadKey();
-            Console.Clear();
 
             var board = new Board();
-            bool? winner = null;
+            bool lost = false;
 
             do
             {
                 board.ReDrawGrid();
-                SelectAction(board);
-            } while (winner == null);
+                lost = SelectAction(board);
+            } while (lost == false);
+
+            board.ReDrawGrid();
+
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine(Util.GameOverString);
         }
 
-        public static void SelectAction(IBoard board)
+        public static bool SelectAction(IBoard board)
         {
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\nPlease enter a command to perform an action:");
@@ -64,6 +70,17 @@ namespace Battleship.state.tracker
                         Console.ReadKey();
                         break;
                     case "--takeattack":
+                        Console.ForegroundColor = ConsoleColor.White;
+                        var attackResult = board.TakeAttack(Mapper.MapCoordinates(input.Replace("--takeAttack", "").Trim()));
+                        Console.WriteLine($"{attackResult}\n");
+
+                        if (attackResult == AttackResult.GameOver)
+                        {
+                            return true;
+                        }
+
+                        Console.WriteLine("\nPress any key to redraw board...");
+                        Console.ReadKey();
                         break;
                     default:
                         Console.ForegroundColor = ConsoleColor.Red;
@@ -72,18 +89,23 @@ namespace Battleship.state.tracker
                         break;
                 }
             }
-            catch (ArgumentException e)
+            catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{e.Message}\n ");
+
+                if (ex is ArgumentException || ex is FormatException)
+                {
+                    Console.WriteLine($"{ex.Message}\n ");
+                }
+                else
+                {
+                    Console.WriteLine($"{ex}\n ");
+                }
+
                 SelectAction(board);
             }
-            catch (Exception e)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{e}\n ");
-                SelectAction(board);
-            }
+
+            return false;
         }
 
         public static Ship CreateShip(string args)
@@ -120,6 +142,19 @@ namespace Battleship.state.tracker
             }
 
             return new Ship(coordinates, direction.Value, length.Value);
+        }
+
+        public static Coordinate TakeAttack(string args)
+        {
+            args = args.Replace("--takeAttack", "").Trim();
+
+            Coordinate coordinates = Mapper.MapCoordinates(args);
+            if (coordinates == null)
+            {
+                throw new ArgumentException("Invalid coordinates specified");
+            }
+
+            return coordinates;
         }
     }
 }

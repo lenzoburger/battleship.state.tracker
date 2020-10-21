@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Battleship.state.tracker.Components.Board;
 using Battleship.state.tracker.Models;
 using Battleship.state.tracker.Utilities;
 
-namespace Battleship.state.tracker.Components.Ship
+namespace Battleship.state.tracker.Components.Vessel
 {
     public abstract class ShipBase : IShip
     {
@@ -13,6 +14,7 @@ namespace Battleship.state.tracker.Components.Ship
         public ShipDirection ShipDirection { get; }
         public int ShipLength { get; }
         public char Character { get; }
+        public bool Sunk => !Coordinates?.Any(c => !c.Hit) ?? false;
 
         public ShipBase(Coordinate startingCoord, ShipDirection shipDirection, int shipLength)
         {

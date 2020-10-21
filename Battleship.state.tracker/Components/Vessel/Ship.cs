@@ -1,7 +1,7 @@
 using System.Text;
 using Battleship.state.tracker.Models;
 
-namespace Battleship.state.tracker.Components.Ship
+namespace Battleship.state.tracker.Components.Vessel
 {
     public class Ship : ShipBase
     {

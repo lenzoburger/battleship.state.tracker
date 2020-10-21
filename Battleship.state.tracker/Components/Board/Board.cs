@@ -1,6 +1,8 @@
-using Battleship.state.tracker.Components.Ship;
+using Battleship.state.tracker.Components.Vessel;
+using Battleship.state.tracker.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Battleship.state.tracker.Components.Board
 {
@@ -22,7 +24,7 @@ namespace Battleship.state.tracker.Components.Board
         public void AddShip(IShip ship)
         {
             ship.SetCoordinates(this);
-            if (!CheckShipExistsAtLocation(ship))
+            if (!CheckShipExistsAtLocations(ship.Coordinates))
             {
                 foreach (var coord in ship.Coordinates)
                 {
@@ -37,16 +39,26 @@ namespace Battleship.state.tracker.Components.Board
             }
         }
 
-        public bool CheckShipExistsAtLocation(IShip ship)
+        public bool CheckShipExistsAtLocations(List<Coordinate> coordinates)
+        {
+            foreach (var coord in coordinates)
+            {
+                if (CheckShipExistsAtLocation(coord))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public bool CheckShipExistsAtLocation(Coordinate coordinate)
         {
             try
             {
-                foreach (var coord in ship.Coordinates)
+                if (Grid[coordinate.Y - 1, coordinate.X - 1] != null)
                 {
-                    if (Grid[coord.Y - 1, coord.X - 1] != null)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             catch (IndexOutOfRangeException)
@@ -59,6 +71,51 @@ namespace Battleship.state.tracker.Components.Board
             }
 
             return false;
+        }
+
+        public IShip GetShipExistsAtLocation(Coordinate coordinate)
+        {
+            try
+            {
+                if (Grid[coordinate.Y - 1, coordinate.X - 1] == null)
+                {
+                    return null;
+                }
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
+            return Grid[coordinate.Y - 1, coordinate.X - 1];
+        }
+
+        public AttackResult TakeAttack(Coordinate coordinate)
+        {
+            var shipAtLocation = GetShipExistsAtLocation(coordinate);
+
+            if (shipAtLocation == null)
+            {
+                return AttackResult.Miss;
+            }
+
+            shipAtLocation.Coordinates.Find(c => c.X == coordinate.X && c.Y == coordinate.Y).Hit = true;
+
+            if (shipAtLocation.Sunk)
+            {
+                if (Ships.Any(s => !s.Sunk))
+                {
+                    return AttackResult.Sunk;
+                }
+
+                return AttackResult.GameOver;
+            }
+
+            return AttackResult.Hit;
         }
 
         public void ReDrawGrid()
@@ -74,14 +131,24 @@ namespace Battleship.state.tracker.Components.Board
 
                 for (int col = 0; col < Grid.GetLength(1); col++)
                 {
-                    var ship = Grid[row, col];
+                    Console.ForegroundColor = ConsoleColor.White;
 
+                    var ship = Grid[row, col];
                     if (ship == null)
                     {
                         Console.Write("-\t");
                     }
                     else
                     {
+                        if (ship.Sunk)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                        }
+                        else if (ship.Coordinates.Find(s => s.Y - 1 == row && s.X - 1 == col).Hit)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                        }
+
                         Console.Write($"{ship.Character}\t");
                     }
                 }

@@ -1,4 +1,5 @@
-using Battleship.state.tracker.Components.Ship;
+using Battleship.state.tracker.Components.Vessel;
+using Battleship.state.tracker.Models;
 
 namespace Battleship.state.tracker.Components.Board
 {
@@ -8,5 +9,6 @@ namespace Battleship.state.tracker.Components.Board
         int Lenght { get; }
 
         void AddShip(IShip ship);
+        AttackResult TakeAttack(Coordinate coordinate);
     }
 }
